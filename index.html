@@ -8,7 +8,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="밤 산책">
 <meta name="theme-color" content="#3B5D80">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>밤 산책 기록장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
 <style>
 :root{ color-scheme: light; }
 *{ box-sizing:border-box; }
@@ -16,8 +23,9 @@ body{
   margin:0; padding:20px 10px 40px;
   background:linear-gradient(150deg,#E9F1FB 0%,#F0EAF9 45%,#FBEAF3 100%);
   color:#28374A;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
+  font-family:'Gowun Dodum',-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
 }
+h1, h2, .btn, .num{ font-family:'Jua','Gowun Dodum',-apple-system,sans-serif; }
 .wrap{ max-width:520px; margin:0 auto; padding:0 16px; position:relative; }
 .glitter-field{ position:absolute; inset:0; pointer-events:none; z-index:0; overflow:visible; }
 .glitter-field svg{ position:absolute; animation:twinkle 3s ease-in-out infinite; }
@@ -487,6 +495,12 @@ document.getElementById('rewardInput').addEventListener('change', function(){
 resetForm();
 render();
 subscribeToFirestore();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
