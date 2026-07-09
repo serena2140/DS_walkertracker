@@ -166,9 +166,14 @@ input:focus{ outline:none; border-color:#7FA8CB; }
 .badge-goal svg{ color:#2D5978; }
 .badge-dad svg{ color:#B24C82; }
 .icon-btn{ display:inline-flex; align-items:center; justify-content:center; }
-.settle-item{ font-size:12px; color:#6E8296; padding:7px 0; border-top:1px solid #EEF3F8; display:flex; justify-content:space-between; }
+.settle-item{ font-size:12px; color:#6E8296; padding:7px 0; border-top:1px solid #EEF3F8; display:flex; justify-content:space-between; cursor:pointer; }
+.settle-item:hover{ color:#3B5D80; }
 .settle-empty{ font-size:12px; color:#B3A092; padding:8px 0 0; }
 #settleBtn.confirm{ background:linear-gradient(180deg,#E1699F,#B24C82); }
+.tab-btn.active{ background:#3B5D80; color:#FFFFFF; border-color:#3B5D80; }
+.badge-author{ background:#FCEFE0; color:#8A5A1E; }
+.settle-detail{ font-size:11.5px; color:#8A9BAF; padding:2px 0 8px 10px; border-left:2px solid #EEF3F8; margin-left:2px; }
+.settle-detail-row{ padding:2px 0; }
 </style>
 </head>
 <body>
@@ -218,22 +223,39 @@ input:focus{ outline:none; border-color:#7FA8CB; }
 
   <div class="motivate" id="motivateMsg"></div>
 
+  <div class="card" id="weeklyGoalCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <h2 style="margin:0;"><svg class="h-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.9 6.9 7.1.6-5.5 4.7 1.8 7-6.3-4-6.3 4 1.8-7-5.5-4.7 7.1-.6z"/></svg> 이번 주 목표</h2>
+      <span style="font-size:12px;color:#6E8296;">목표<input type="number" id="weeklyGoalInput" min="1" style="width:44px;margin-left:4px;"> 회</span>
+    </div>
+    <div style="background:#EAF1F8;border-radius:999px;height:10px;overflow:hidden;margin-bottom:8px;">
+      <div id="weeklyProgressBar" style="background:linear-gradient(90deg,#7FA8CB,#B39DDB,#E79AC9);height:100%;width:0%;transition:width .3s;"></div>
+    </div>
+    <p style="font-size:13px;color:#6E8296;margin:0;text-align:center;" id="weeklyProgressText">0 / 0회</p>
+  </div>
+
   <div class="card" id="settleCard">
     <h2><svg class="h-ico" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/></svg> 용돈 정산</h2>
     <p style="font-size:13px;color:#6E8296;margin:0 0 12px;">이번 누적 <strong id="pendingMinutes" style="color:#28374A;">0</strong>분 → <strong id="pendingAmount" style="color:#3B5D80;">0</strong>원</p>
     <button class="btn btn-primary" id="settleBtn" onclick="doSettlement()">이번 누적 정산하기</button>
     <p style="font-size:12px;color:#8A9BAF;margin:12px 0 0;">총 누적 지급액 <strong id="totalPaidNum" style="color:#6E8296;">0</strong>원</p>
     <div id="settlementHistory"></div>
+    <div class="settings-row" style="margin:14px 0 0;padding-top:12px;border-top:1px solid #EEF3F8;">
+      <span>1시간당 용돈</span>
+      <input type="number" id="rewardInput" min="0" step="1000">
+      <span>원 (10분 단위로 계단식 계산)</span>
+    </div>
+  </div>
+
+  <div class="card" id="chartCard">
+    <h2><svg class="h-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15v3M12 10v8M16 6v12"/></svg> 월별 산책 시간</h2>
+    <div style="position:relative;height:180px;">
+      <canvas id="monthlyChart"></canvas>
+    </div>
   </div>
 
   <div class="card">
     <h2 id="formTitle"><svg class="h-ico" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 2.5 5 6 5c2 0 3.5 1 4 2.5C10.5 6 12 5 14 5c3.5 0 5.5 3.5 3.5 7.5C19 16.65 12 21 12 21z"/></svg> 오늘 산책 기록하기</h2>
-
-    <div class="settings-row">
-      <span>누적 1시간당 용돈</span>
-      <input type="number" id="rewardInput" min="0" step="1000">
-      <span>원 (분 단위 누적, 시간 채울 때마다 지급)</span>
-    </div>
 
     <div class="field-row">
       <div class="field">
@@ -256,6 +278,13 @@ input:focus{ outline:none; border-color:#7FA8CB; }
       <label for="inputDad">아빠와 함께 걸었어요</label>
     </div>
     <div class="field">
+      <label>작성자</label>
+      <div style="display:flex;gap:14px;font-size:13px;color:#3A4F63;">
+        <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="inputAuthor" value="승연" checked style="width:auto;"> 승연</label>
+        <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="inputAuthor" value="아빠" style="width:auto;"> 아빠</label>
+      </div>
+    </div>
+    <div class="field">
       <label>한줄 소감 (선택)</label>
       <input type="text" id="inputNote" placeholder="오늘은 바람이 시원했다">
     </div>
@@ -271,6 +300,10 @@ input:focus{ outline:none; border-color:#7FA8CB; }
       <h2 style="margin:0;"><svg class="h-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M8 8h8M8 12h8M8 16h5"/></svg> 기록 목록</h2>
       <button class="btn btn-ghost" style="width:auto;padding:6px 10px;font-size:12px;white-space:nowrap;" onclick="exportCSV()">엑셀로 내보내기</button>
     </div>
+    <div class="tab-row" style="display:flex;gap:6px;margin-bottom:12px;">
+      <button class="btn btn-ghost tab-btn active" id="tabActiveBtn" style="width:auto;padding:6px 12px;font-size:12px;" onclick="setEntriesTab('active')">진행 중</button>
+      <button class="btn btn-ghost tab-btn" id="tabSettledBtn" style="width:auto;padding:6px 12px;font-size:12px;" onclick="setEntriesTab('settled')">정산 완료</button>
+    </div>
     <div class="entries" id="entriesList"></div>
   </div>
 
@@ -278,6 +311,7 @@ input:focus{ outline:none; border-color:#7FA8CB; }
 
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCVMRf4UywULm2uf4Nx5GVNCMvsHf3o1Qg",
@@ -301,10 +335,18 @@ const HEART_ICON_SM = '<svg width="10" height="10" viewBox="0 0 24 24" fill="cur
 
 let entries = [];
 let settlements = [];
-let settings = { reward: 10000 };
+let settings = { reward: 10000, weeklyGoal: 3 };
 let editingId = null;
 let confirmingDeleteId = null;
 let confirmingSettle = false;
+let entriesTab = 'active';
+let expandedSettlementId = null;
+let monthlyChart = null;
+
+function setEntriesTab(tab){
+  entriesTab = tab;
+  render();
+}
 
 function subscribeToFirestore(){
   entriesRef.onSnapshot(function(snapshot){
@@ -317,7 +359,7 @@ function subscribeToFirestore(){
 
   settingsRef.onSnapshot(function(doc){
     if(doc.exists){
-      settings = doc.data();
+      settings = Object.assign({ reward: 10000, weeklyGoal: 3 }, doc.data());
       render();
     }
   }, function(err){ console.error('settings sync error', err); });
@@ -374,9 +416,81 @@ function doSettlement(){
   batch.set(newDoc, {
     minutes: pending.minutes,
     amount: pending.amount,
+    entryIds: pending.eligible.map(function(e){ return e.id; }),
     settledAt: firebase.firestore.FieldValue.serverTimestamp()
   });
   batch.commit().catch(function(err){ console.error(err); });
+}
+
+function toggleSettlementDetail(id){
+  expandedSettlementId = (expandedSettlementId === id) ? null : id;
+  render();
+}
+
+function getWeekRange(){
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+  const mondayStr = monday.getFullYear()+'-'+pad(monday.getMonth()+1)+'-'+pad(monday.getDate());
+  const sundayStr = addDays(mondayStr, 6);
+  return { start: mondayStr, end: sundayStr };
+}
+
+function computeWeeklyProgress(){
+  const range = getWeekRange();
+  const daysWalked = new Set(
+    entries.filter(function(e){ return e.date >= range.start && e.date <= range.end; }).map(function(e){ return e.date; })
+  );
+  return { count: daysWalked.size, goal: settings.weeklyGoal || 3 };
+}
+
+function computeMonthlyMinutes(){
+  const map = {};
+  entries.forEach(function(e){
+    const ym = e.date.slice(0,7);
+    map[ym] = (map[ym] || 0) + e.duration;
+  });
+  const keys = Object.keys(map).sort();
+  return {
+    labels: keys.map(function(k){ return k.slice(5,7)+'월'; }),
+    values: keys.map(function(k){ return Math.round(map[k]/60*10)/10; })
+  };
+}
+
+function renderChart(){
+  if(typeof Chart === 'undefined') return;
+  const canvas = document.getElementById('monthlyChart');
+  if(!canvas) return;
+  const data = computeMonthlyMinutes();
+  if(monthlyChart){
+    monthlyChart.data.labels = data.labels;
+    monthlyChart.data.datasets[0].data = data.values;
+    monthlyChart.update();
+    return;
+  }
+  monthlyChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: '누적 시간(시간)',
+        data: data.values,
+        backgroundColor: '#9FC3E0',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { size: 11 } } },
+        x: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
 }
 
 function pad(n){ return n.toString().padStart(2,'0'); }
@@ -452,6 +566,12 @@ function render(){
   document.getElementById('moneyLeftover').textContent = pending.minutes > 0 ? (pending.minutes + '분 누적됨') : '30분 이상 걸으면 누적 시작';
   document.getElementById('motivateMsg').innerHTML = HEART_ICON_SM + ' ' + motivateText(streak);
   document.getElementById('rewardInput').value = settings.reward;
+  document.getElementById('weeklyGoalInput').value = settings.weeklyGoal || 3;
+
+  const weekly = computeWeeklyProgress();
+  const pct = Math.min(100, Math.round((weekly.count / weekly.goal) * 100));
+  document.getElementById('weeklyProgressBar').style.width = pct + '%';
+  document.getElementById('weeklyProgressText').textContent = weekly.count + ' / ' + weekly.goal + '회';
 
   document.getElementById('pendingMinutes').textContent = pending.minutes;
   document.getElementById('pendingAmount').textContent = pending.amount.toLocaleString();
@@ -476,15 +596,36 @@ function render(){
     historyEl.innerHTML = settlements.map(function(r){
       const d = r.settledAt && r.settledAt.toDate ? r.settledAt.toDate() : null;
       const label = d ? (d.getMonth()+1)+'/'+d.getDate()+' 정산' : '정산';
-      return '<div class="settle-item"><span>' + label + ' · ' + r.minutes + '분</span><span>' + r.amount.toLocaleString() + '원</span></div>';
+      const row = '<div class="settle-item" onclick="toggleSettlementDetail(\'' + r.id + '\')"><span>' + label + ' · ' + r.minutes + '분</span><span>' + r.amount.toLocaleString() + '원</span></div>';
+      let detail = '';
+      if(expandedSettlementId === r.id){
+        const ids = r.entryIds || [];
+        const items = entries.filter(function(e){ return ids.indexOf(e.id) !== -1; })
+          .sort(function(a,b){ return a.date.localeCompare(b.date); });
+        detail = '<div class="settle-detail">' + (items.length === 0
+          ? '해당 산책 기록을 찾을 수 없어요'
+          : items.map(function(e){
+              return '<div class="settle-detail-row">' + formatDateLabel(e.date) + ' · ' + formatDuration(e.duration) + '</div>';
+            }).join('')) + '</div>';
+      }
+      return row + detail;
     }).join('');
   }
 
-  const sorted = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.startTime.localeCompare(a.startTime));
+  renderChart();
+
+  document.getElementById('tabActiveBtn').classList.toggle('active', entriesTab === 'active');
+  document.getElementById('tabSettledBtn').classList.toggle('active', entriesTab === 'settled');
+
+  const sorted = [...entries]
+    .filter(function(e){ return entriesTab === 'active' ? !e.settled : !!e.settled; })
+    .sort((a,b) => b.date.localeCompare(a.date) || b.startTime.localeCompare(a.startTime));
   const list = document.getElementById('entriesList');
 
   if(sorted.length === 0){
-    list.innerHTML = '<div class="empty">아직 기록이 없어요.<br>오늘 산책부터 적어볼까요?</div>';
+    list.innerHTML = entriesTab === 'active'
+      ? '<div class="empty">아직 기록이 없어요.<br>오늘 산책부터 적어볼까요?</div>'
+      : '<div class="empty">아직 정산 완료된 기록이 없어요.</div>';
     return;
   }
 
@@ -495,6 +636,7 @@ function render(){
         + '<p class="entry-date">' + formatDateLabel(e.date) + '</p>'
         + '<p class="entry-time">' + e.startTime + ' → ' + e.endTime + ' · ' + formatDuration(e.duration) + '</p>'
         + '<div class="badges">'
+          + (e.author ? '<span class="badge badge-author">' + e.author + '</span>' : '')
           + (e.goalMet ? '<span class="badge badge-goal">' + STAR_ICON_SM + ' 30분 달성</span>' : '')
           + (e.withDad ? '<span class="badge badge-dad">' + HEART_ICON_SM + ' 아빠와 함께</span>' : '')
         + '</div>'
@@ -514,13 +656,14 @@ function csvCell(v){
 }
 
 function exportCSV(){
-  const header = ['날짜','시작 시각','종료 시각','분','아빠 동행','메모','30분 달성','정산 여부'];
+  const header = ['날짜','시작 시각','종료 시각','분','작성자','아빠 동행','메모','30분 달성','정산 여부'];
   const sorted = [...entries].sort(function(a,b){
     return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
   });
   const rows = sorted.map(function(e){
     return [
       e.date, e.startTime, e.endTime, e.duration,
+      e.author || '',
       e.withDad ? '함께' : '',
       e.note || '',
       e.goalMet ? '달성' : '',
@@ -567,6 +710,8 @@ function submitEntry(){
   const endTime = document.getElementById('inputEnd').value;
   const withDad = document.getElementById('inputDad').checked;
   const note = document.getElementById('inputNote').value.trim();
+  const authorInput = document.querySelector('input[name="inputAuthor"]:checked');
+  const author = authorInput ? authorInput.value : '승연';
 
   if(!date || !startTime || !endTime){
     document.getElementById('formTitle').innerHTML = HEART_ICON + ' 날짜와 시작·종료 시각을 모두 입력해줘';
@@ -575,7 +720,7 @@ function submitEntry(){
 
   const duration = calcDuration(startTime, endTime);
   const goalMet = duration >= 30;
-  const payload = { date, startTime, endTime, withDad, note, duration, goalMet };
+  const payload = { date, startTime, endTime, withDad, note, duration, goalMet, author };
 
   if(editingId){
     entriesRef.doc(editingId).update(payload).catch(function(err){ console.error(err); });
@@ -596,6 +741,8 @@ function startEdit(id){
   document.getElementById('inputEnd').value = e.endTime;
   document.getElementById('inputDad').checked = e.withDad;
   document.getElementById('inputNote').value = e.note || '';
+  const authorRadio = document.querySelector('input[name="inputAuthor"][value="' + (e.author || '승연') + '"]');
+  if(authorRadio) authorRadio.checked = true;
   document.getElementById('formTitle').innerHTML = PENCIL_ICON_SM + ' 기록 수정하기';
   document.getElementById('submitBtn').innerHTML = STAR_ICON_SM + ' 수정 완료';
   document.getElementById('cancelBtn').style.display = 'inline-block';
@@ -622,6 +769,12 @@ document.getElementById('rewardInput').addEventListener('change', function(){
   const val = parseInt(this.value, 10);
   const reward = isNaN(val) ? 0 : val;
   settingsRef.set({ reward: reward }, { merge: true }).catch(function(err){ console.error(err); });
+});
+
+document.getElementById('weeklyGoalInput').addEventListener('change', function(){
+  const val = parseInt(this.value, 10);
+  const weeklyGoal = isNaN(val) || val < 1 ? 1 : val;
+  settingsRef.set({ weeklyGoal: weeklyGoal }, { merge: true }).catch(function(err){ console.error(err); });
 });
 
 resetForm();
